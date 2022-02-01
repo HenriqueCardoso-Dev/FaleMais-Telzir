@@ -14,8 +14,16 @@ class UserController extends Controller
 
     public function store(UserRequest $request) {
         try {
+            $input = $request->validated();
+
+            $verify = User::where('email', $input['email'])->first();
+
+            if($verify) {
+                return response()->json(['error' => 'Este e-mail já está sendo utilizado!'], 401);
+            }
+
             DB::beginTransaction();
-                $input = $request->validated();
+
                 $user = User::create([
                     'name' => $input['name'],
                     'email' => $input['email'],
@@ -23,8 +31,8 @@ class UserController extends Controller
                     'user_flag' => 2
                 ]);
             DB::commit();
-
             return $user;
+
         } catch (\Throwable $th) {
             return $th->getMessage();
         }
